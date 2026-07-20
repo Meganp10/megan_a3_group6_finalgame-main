@@ -6,4 +6,3 @@ function drawLevel3() {
     textAlign(CENTER, CENTER);
     text("level 3", width/2, height/2);
 }
-
