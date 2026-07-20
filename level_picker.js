@@ -221,7 +221,7 @@ function handleLevelPickerClick() {
 
     // Level circles
     let cx = [570, 565, 531];
-    let cy = [158, 405, 640];
+    let cy = [158, 405, 622];
     let radius = 73 / 2;
 
     for (let i = 0; i < 3; i++) {
