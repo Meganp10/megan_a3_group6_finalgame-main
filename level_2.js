@@ -3,7 +3,7 @@
 // ------------------------------------------------------------
 
 // 1. WALLS
-const LEVEL3_WALLS = [
+const LEVEL2_WALLS = [
     // Left boundary — sharper zig-zag, narrower corridor
     { x1: 260, y1: 1200, x2: 300, y2: 950 },
     { x1: 300, y1: 950,  x2: 330, y2: 700 },
@@ -18,8 +18,8 @@ const LEVEL3_WALLS = [
 ];
 
 
-function buildLevel3Walls(worldW, worldH) {
-    return LEVEL3_WALLS.map(w => ({
+function buildLevel2Walls(worldW, worldH) {
+    return LEVEL2_WALLS.map(w => ({
         x1: w.x1,
         y1: w.y1,
         x2: w.x2,
@@ -28,7 +28,7 @@ function buildLevel3Walls(worldW, worldH) {
 }
 
 // 2. SPIKES
-const LEVEL3_SPIKES = [
+const LEVEL2_SPIKES = [
     // Lower section — early pressure
     { x: 520, y: 1150, variant: 2 },
     { x: 680, y: 1130, variant: 1 },
@@ -54,7 +54,7 @@ const LEVEL3_SPIKES = [
 
 
 // 3. FISH SPAWNS
-const LEVEL3_FISH_SPAWNS = [
+const LEVEL2_FISH_SPAWNS = [
     { x: 560, y: 1100 }, // near lower spikes
     { x: 720, y: 900 },  // inside spike cluster
     { x: 600, y: 720 },  // narrow corridor
@@ -64,7 +64,7 @@ const LEVEL3_FISH_SPAWNS = [
 
 
 // 4. FISH START POSITION
-function getLevel3FishStart(worldW, worldH) {
+function getLevel2FishStart(worldW, worldH) {
     return {
         x: worldW / 2 - 80,
         y: worldH - 250

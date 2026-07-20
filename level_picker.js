@@ -283,49 +283,7 @@ function startLevel2() {
     resetGame();
     currentLevel = 2;
     gameState = "level2";
-
-    // Clear old terrain
-    walls.length = 0;
-    spikes.length = 0;
-
-    // Load Level 2 background
-    bgImg = loadImage("assets/images/level2_background.png", () => {
-
-        // Scale world
-        WORLD_W = bgImg.width;
-        WORLD_H = bgImg.height;
-        bgScale = Math.max(VIEW_W / WORLD_W, VIEW_H / WORLD_H);
-        WORLD_W_SCALED = WORLD_W * bgScale;
-        WORLD_H_SCALED = WORLD_H * bgScale;
-        WORLD_TOP_LIMIT = WORLD_H_SCALED / 2 - 550;
-
-        // Fish start position
-        const fishStart = getLevel2FishStart(WORLD_W_SCALED, WORLD_H_SCALED);
-        fish.x = fishStart.x;
-        fish.y = fishStart.y;
-
-        // Fish spawn points
-        fishSpawns = LEVEL2_FISH_SPAWNS;
-
-        // Build walls
-        walls.push(...buildLevel2Walls(WORLD_W_SCALED, WORLD_H_SCALED));
-
-        // Load spikes
-        spikes = LEVEL2_SPIKES.map(s => ({ ...s }));
-
-        // Player spawn
-        player.x = WORLD_W_SCALED / 2;
-        player.y = playerSpawnY();
-
-        // Wall side calculation
-        for (let w of walls) {
-            w.side = Math.sign(
-                pointSide(player.x, player.y, w.x1, w.y1, w.x2, w.y2)
-            );
-        }
-    });
 }
-
 
 function startLevel3() {
     resetGame();
