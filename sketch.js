@@ -1450,32 +1450,30 @@ function drawBlizzardOverlay() {
 }
 
 function mousePressed() {
-
-    // --- LEVEL PICKER CLICK (must run FIRST) ---
-    if (gameState === "level_picker") {
-        handleLevelPickerClick();   // updates activePanelIndex + playHover
-    }
-
-    // --- ENTER BUTTON CLICK (inside info panel) ---
-    if (gameState === "level_picker" && activePanelIndex !== -1) {
-        if (levelPanels[activePanelIndex].playHover) {
-            playBtnPressed[activePanelIndex] = true;
-            startLevel(activePanelIndex);   // ⭐ THIS STARTS LEVEL 3 ⭐
-            return;
-        }
-    }
-
-    // --- TUTORIAL MOUSE INPUT ---
+    // --- TUTORIAL MOUSE INPUT (tutorial_cards.js) ---
     if (handleTutorialMousePressed()) return;
 
-    // --- START SCREEN BUTTON PRESS ---
-    if (gameState === "start") {
-        if (mouseX > START_BTN.x && mouseX < START_BTN.x + START_BTN.w &&
-            mouseY > START_BTN.y && mouseY < START_BTN.y + START_BTN.h) {
-            startBtnPressed = true;
-        }
+    // --- PLAY BUTTON PRESS (inside info panel) ---
+    if (gameState === "level_picker" && activePanelIndex !== -1) {
+      if (levelPanels[activePanelIndex].playHover) {
+        playBtnPressed[activePanelIndex] = true;
+      }
+    }
+
+    // --- LEVEL PICKER CLICK ---
+    if (gameState === "level_picker") {
+        handleLevelPickerClick();
         return;
     }
+
+    /// --- START SCREEN BUTTON PRESS ---
+if (gameState === "start") {
+  if (mouseX > START_BTN.x && mouseX < START_BTN.x + START_BTN.w &&
+      mouseY > START_BTN.y && mouseY < START_BTN.y + START_BTN.h) {
+    startBtnPressed = true;
+  }
+  return;
+}
 
     // --- WIN SCREEN BUTTON ---
     if (gameState === "win") {
@@ -1505,16 +1503,14 @@ function mousePressed() {
 
     // --- LEVEL PICKER BUTTON (win + loss screens) ---
     if (gameState === "win" || gameState === "loss") {
-        let bx = width/2, by = height*0.90, bw = 320, bh = 56;
+      let bx = width/2, by = height*0.90, bw = 320, bh = 56;
 
-        if (mouseX > bx-bw/2 && mouseX < bx+bw/2 &&
-            mouseY > by-bh/2 && mouseY < by+bh/2) {
-            levelPickerBtnPressed = true;
-        }
+      if (mouseX > bx-bw/2 && mouseX < bx+bw/2 &&
+          mouseY > by-bh/2 && mouseY < by+bh/2) {
+        levelPickerBtnPressed = true;
+      }
     }
 }
-
-
 
 function mouseReleased() {
   // --- TUTORIAL MOUSE INPUT (tutorial_cards.js) ---
