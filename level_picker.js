@@ -286,9 +286,12 @@ function startLevel2() {
 }
 
 function startLevel3() {
-    resetGame();
-    currentLevel = 3;
-    gameState = "level3";
+   resetGame();          // resets timer, penguin, stomp, etc.
+    gameState = "tutorial";
+    tutorialActive = true;
+    tutorialAlpha = 0;
+    tutorialIndex = 0;
+    tutorialDelay = tutorialSteps[0].delay;
 }
 
 
