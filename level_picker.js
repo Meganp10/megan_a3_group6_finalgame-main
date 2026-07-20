@@ -297,7 +297,9 @@ function startLevel2() {
 }
 
 function startLevel3() {
-    startLevel1();   // TEMP: make Level 3 behave like Level 1
+    resetGame();
+    currentLevel = 3;
+    gameState = "level3";
 }
 
 
