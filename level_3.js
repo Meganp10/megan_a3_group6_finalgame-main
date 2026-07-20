@@ -4,16 +4,19 @@
 
 // 1. WALLS
 const LEVEL3_WALLS = [
-    { x1: 200,  y1: 1200,  x2: 260,  y2: 900 },
-    { x1: 260,  y1: 900,   x2: 300,  y2: 600 },
-    { x1: 300,  y1: 600,   x2: 340,  y2: 300 },
-    { x1: 340,  y1: 300,   x2: 380,  y2: 100 },
+    // Left boundary — sharper zig-zag, narrower corridor
+    { x1: 260, y1: 1200, x2: 300, y2: 950 },
+    { x1: 300, y1: 950,  x2: 330, y2: 700 },
+    { x1: 330, y1: 700,  x2: 360, y2: 450 },
+    { x1: 360, y1: 450,  x2: 390, y2: 200 },
 
-    { x1: 1000, y1: 1200,  x2: 940,  y2: 900 },
-    { x1: 940,  y1: 900,   x2: 900,  y2: 600 },
-    { x1: 900,  y1: 600,   x2: 860,  y2: 300 },
-    { x1: 860,  y1: 300,   x2: 820,  y2: 100 }
+    // Right boundary — mirrored but slightly offset for asymmetry
+    { x1: 940, y1: 1200, x2: 900, y2: 950 },
+    { x1: 900, y1: 950,  x2: 860, y2: 700 },
+    { x1: 860, y1: 700,  x2: 820, y2: 450 },
+    { x1: 820, y1: 450,  x2: 780, y2: 200 }
 ];
+
 
 function buildLevel3Walls(worldW, worldH) {
     return LEVEL3_WALLS.map(w => ({
@@ -26,26 +29,39 @@ function buildLevel3Walls(worldW, worldH) {
 
 // 2. SPIKES
 const LEVEL3_SPIKES = [
-    { x: 450, y: 1100, variant: 2 },
-    { x: 700, y: 1080, variant: 1 },
-    { x: 520, y: 850, variant: 0 },
-    { x: 780, y: 820, variant: 3 },
-    { x: 600, y: 780, variant: 2 },
-    { x: 480, y: 520, variant: 1 },
-    { x: 720, y: 500, variant: 0 },
-    { x: 650, y: 450, variant: 3 },
-    { x: 560, y: 250, variant: 2 },
-    { x: 740, y: 230, variant: 1 }
+    // Lower section — early pressure
+    { x: 520, y: 1150, variant: 2 },
+    { x: 680, y: 1130, variant: 1 },
+
+    // Mid section — choke point cluster
+    { x: 540, y: 900, variant: 3 },
+    { x: 600, y: 880, variant: 2 },
+    { x: 660, y: 900, variant: 3 },
+
+    // Narrow corridor — precision required
+    { x: 580, y: 700, variant: 0 },
+    { x: 720, y: 680, variant: 1 },
+
+    // Upper section — staggered blockers
+    { x: 500, y: 520, variant: 2 },
+    { x: 650, y: 500, variant: 3 },
+    { x: 760, y: 480, variant: 1 },
+
+    // Near exit — final challenge
+    { x: 580, y: 300, variant: 3 },
+    { x: 700, y: 280, variant: 2 }
 ];
+
 
 // 3. FISH SPAWNS
 const LEVEL3_FISH_SPAWNS = [
-    { x: 500, y: 1050 },
-    { x: 750, y: 900 },
-    { x: 600, y: 700 },
-    { x: 680, y: 550 },
-    { x: 540, y: 400 }
+    { x: 560, y: 1100 }, // near lower spikes
+    { x: 720, y: 900 },  // inside spike cluster
+    { x: 600, y: 720 },  // narrow corridor
+    { x: 680, y: 520 },  // near staggered blockers
+    { x: 540, y: 350 }   // near exit spikes
 ];
+
 
 // 4. FISH START POSITION
 function getLevel3FishStart(worldW, worldH) {
