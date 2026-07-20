@@ -1453,10 +1453,10 @@ function mousePressed() {
 
     // --- LEVEL PICKER CLICK (must run FIRST) ---
     if (gameState === "level_picker") {
-        handleLevelPickerClick();   // updates playHover
+        handleLevelPickerClick();   // updates activePanelIndex + playHover
     }
 
-    // --- PLAY BUTTON PRESS (inside info panel) ---
+    // --- ENTER BUTTON CLICK (inside info panel) ---
     if (gameState === "level_picker" && activePanelIndex !== -1) {
         if (levelPanels[activePanelIndex].playHover) {
             playBtnPressed[activePanelIndex] = true;
@@ -1513,6 +1513,7 @@ function mousePressed() {
         }
     }
 }
+
 
 
 function mouseReleased() {
