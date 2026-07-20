@@ -1453,19 +1453,20 @@ function mousePressed() {
 
     // --- LEVEL PICKER CLICK (must run FIRST) ---
     if (gameState === "level_picker") {
-        handleLevelPickerClick();
-        return;
+        handleLevelPickerClick();   // updates playHover
     }
-
-    // --- TUTORIAL MOUSE INPUT ---
-    if (handleTutorialMousePressed()) return;
 
     // --- PLAY BUTTON PRESS (inside info panel) ---
     if (gameState === "level_picker" && activePanelIndex !== -1) {
         if (levelPanels[activePanelIndex].playHover) {
             playBtnPressed[activePanelIndex] = true;
+            startLevel(activePanelIndex);   // ⭐ THIS STARTS LEVEL 3 ⭐
+            return;
         }
     }
+
+    // --- TUTORIAL MOUSE INPUT ---
+    if (handleTutorialMousePressed()) return;
 
     // --- START SCREEN BUTTON PRESS ---
     if (gameState === "start") {

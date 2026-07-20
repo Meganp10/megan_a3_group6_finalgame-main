@@ -208,59 +208,67 @@ function drawInfoPanel(index) {
 
 function handleLevelPickerClick() {
 
-let infoBtnX = 25;
-let infoBtnY = 25;
-let infoBtnSize = 70;
+    // Info button toggle
+    let infoBtnX = 25;
+    let infoBtnY = 25;
+    let infoBtnSize = 70;
 
-if (mouseX > infoBtnX && mouseX < infoBtnX + infoBtnSize &&
-    mouseY > infoBtnY && mouseY < infoBtnY + infoBtnSize) {
-  infoOpen = !infoOpen;
-  return;
-}
-
-  let cx = [570, 565, 531];
-  let cy = [158, 405, 640];
-  let radius = 73 / 2;
-
-  for (let i = 0; i < 3; i++) {
-    let unlocked = (i === 0) ? true
-                  : (i === 1) ? level1Complete
-                  : level2Complete;
-
-    let d = dist(mouseX, mouseY, cx[i], cy[i]);
-    if (d < radius) {
-
-      if (!unlocked) {
-        levelShake[i] = 10;
-        activePanelIndex = -1;
-        isClosingPanel = false;
-        nextPanelIndex = -1;
+    if (mouseX > infoBtnX && mouseX < infoBtnX + infoBtnSize &&
+        mouseY > infoBtnY && mouseY < infoBtnY + infoBtnSize) {
+        infoOpen = !infoOpen;
         return;
-      }
-
-      if (activePanelIndex === i) {
-        activePanelIndex = -1;
-        isClosingPanel = false;
-        nextPanelIndex = -1;
-        return;
-      }
-
-      if (activePanelIndex !== -1 && activePanelIndex !== i) {
-        isClosingPanel = true;
-        nextPanelIndex = i;
-        return;
-      }
-
-     activePanelIndex = i;
-isClosingPanel = false;
-nextPanelIndex = -1;
-
-startLevel(i);   // ⭐ CLICKING LEVEL 3 NOW STARTS LEVEL 3 ⭐
-return;
-
     }
-  }
+
+    // Level circles
+    let cx = [570, 565, 531];
+    let cy = [158, 405, 640];
+    let radius = 73 / 2;
+
+    for (let i = 0; i < 3; i++) {
+        let unlocked = (i === 0) ? true
+                      : (i === 1) ? level1Complete
+                      : level2Complete;
+
+        let d = dist(mouseX, mouseY, cx[i], cy[i]);
+        if (d < radius) {
+
+            if (!unlocked) {
+                levelShake[i] = 10;
+                activePanelIndex = -1;
+                isClosingPanel = false;
+                nextPanelIndex = -1;
+                return;
+            }
+
+            if (activePanelIndex === i) {
+                activePanelIndex = -1;
+                isClosingPanel = false;
+                nextPanelIndex = -1;
+                return;
+            }
+
+            if (activePanelIndex !== -1 && activePanelIndex !== i) {
+                isClosingPanel = true;
+                nextPanelIndex = i;
+                return;
+            }
+
+            activePanelIndex = i;
+            isClosingPanel = false;
+            nextPanelIndex = -1;
+            return;
+        }
+    }
+
+    // ⭐ ENTER BUTTON CLICK — START LEVEL ⭐
+    for (let i = 0; i < levelPanels.length; i++) {
+        if (levelPanels[i].playHover) {
+            startLevel(i);
+            return;
+        }
+    }
 }
+
 
 function startLevel(i) {
     if (i === 0) {
