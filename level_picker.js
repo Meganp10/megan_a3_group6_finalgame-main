@@ -251,10 +251,13 @@ if (mouseX > infoBtnX && mouseX < infoBtnX + infoBtnSize &&
         return;
       }
 
-      activePanelIndex = i;
-      isClosingPanel = false;
-      nextPanelIndex = -1;
-      return;
+     activePanelIndex = i;
+isClosingPanel = false;
+nextPanelIndex = -1;
+
+startLevel(i);   // ⭐ CLICKING LEVEL 3 NOW STARTS LEVEL 3 ⭐
+return;
+
     }
   }
 }
@@ -286,10 +289,9 @@ function startLevel2() {
 }
 
 function startLevel3() {
-    resetGame();
-    currentLevel = 3;
-    gameState = "level3";
+    startLevel1();   // TEMP: make Level 3 behave like Level 1
 }
+
 
 
 
