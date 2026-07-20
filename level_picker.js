@@ -287,7 +287,7 @@ function startLevel2() {
 
 function startLevel3() {
     resetGame();
-    currentLevel = 2;
+    currentLevel = 3;
     gameState = "level3";
 }
 
