@@ -695,10 +695,7 @@ if (gameState === "transition") {
       return;
   }
 
-  if (gameState === "level3") {
-      drawLevel3();
-      return;
-  }
+
 
 
   // -------------------------

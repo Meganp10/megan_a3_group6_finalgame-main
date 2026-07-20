@@ -286,13 +286,40 @@ function startLevel2() {
 }
 
 function startLevel3() {
-   resetGame();          // resets timer, penguin, stomp, etc.
-    gameState = "tutorial";
-    tutorialActive = true;
-    tutorialAlpha = 0;
-    tutorialIndex = 0;
-    tutorialDelay = tutorialSteps[0].delay;
+    resetGame();
+    currentLevel = 3;
+    gameState = "level3";
+
+    bgImg = loadImage("assets/images/level3_background.png", () => {
+        WORLD_W = bgImg.width;
+        WORLD_H = bgImg.height;
+        bgScale = Math.max(VIEW_W / WORLD_W, VIEW_H / WORLD_H);
+        WORLD_W_SCALED = WORLD_W * bgScale;
+        WORLD_H_SCALED = WORLD_H * bgScale;
+        WORLD_TOP_LIMIT = WORLD_H_SCALED / 2 - 550;
+
+        const fishStart = getLevel3FishStart(WORLD_W_SCALED, WORLD_H_SCALED);
+        fish.x = fishStart.x;
+        fish.y = fishStart.y;
+
+        fishSpawns = LEVEL3_FISH_SPAWNS;
+
+        walls.length = 0;
+        walls.push(...buildLevel3Walls(WORLD_W_SCALED, WORLD_H_SCALED));
+
+        spikes = LEVEL3_SPIKES.map(s => ({ ...s }));
+
+        player.x = WORLD_W_SCALED / 2;
+        player.y = playerSpawnY();
+
+        for (let w of walls) {
+            w.side = Math.sign(
+                pointSide(player.x, player.y, w.x1, w.y1, w.x2, w.y2)
+            );
+        }
+    });
 }
+
 
 
 
