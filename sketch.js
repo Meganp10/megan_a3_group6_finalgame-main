@@ -212,9 +212,9 @@ const SPRITES = {
   },
   goat_left: {
     img: null,
-    frameWidth: 200,     // adjust to your sheet
-    frameHeight: 200,    // adjust to your sheet
-    numFrames: 8,        // first row
+    frameWidth: 256,
+    frameHeight: 256,
+    numFrames: 8,
     animSpeed: 6,
     scale: 1.0,
     offsetX: 0,
@@ -228,9 +228,9 @@ const SPRITES = {
 
 goat_right: {
     img: null,
-    frameWidth: 200,
-    frameHeight: 200,
-    numFrames: 8,        // second row
+    frameWidth: 256,
+    frameHeight: 256,
+    numFrames: 8,
     animSpeed: 6,
     scale: 1.0,
     offsetX: 0,
@@ -241,6 +241,7 @@ goat_right: {
     cropTop:    Array(8).fill(0),
     cropBottom: Array(8).fill(0)
 },
+
 };
 
 let player = {
