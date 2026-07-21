@@ -213,16 +213,19 @@ const SPRITES = {
 
   goat: {
   img: null,
-  frameWidth: 317,
-  frameHeight: 248,
-  numFrames: 5,
+  frameWidth: 248,   // 247–248 is correct
+  frameHeight: 248,  // 247–248 is correct
+  numFrames: 5,      // 5 columns
   animSpeed: 20,
   scale: 0.3,
-  cropLeft:   [0,0,0,0,0],
-  cropRight:  [0,0,0,0,0],
-  cropTop:    [0,0,0,0,0],
-  cropBottom: [0,0,0,0,0]
-},
+
+  cropLeft:   [10, 15, 20, 15, 10],
+  cropRight:  [10, 15, 20, 15, 10],
+  cropTop:    [0, 0, 0, 0, 0],
+  cropBottom: [0, 0, 0, 0, 0]
+
+}
+
 
 };
 
@@ -1702,7 +1705,8 @@ function getGoatFrame(index, row) {
     const fw = cfg.frameWidth;
     const fh = cfg.frameHeight;
 
-    const col = index % cfg.numFrames;
+    // ⭐ Correct column for 5-wide sheet
+    const col = index % cfg.numFrames;   // numFrames = 5
 
     return cfg.img.get(
         col * fw + cfg.cropLeft[index],
@@ -1712,9 +1716,6 @@ function getGoatFrame(index, row) {
     );
 }
 
-
-
-
 // Goat movement + animation
 function updateGoat() {
     // Use correct frame count (4 frames per row)
@@ -1722,9 +1723,6 @@ function updateGoat() {
     if (frameCount % SPRITES.goat.animSpeed === 0) {
     goatFrameIndex = (goatFrameIndex + 1) % SPRITES.goat.numFrames;
 }
-
-
-
 
     // Move goat
   const goatSpeed = 0.8;   // slow enough to see each frame clearly
@@ -1796,14 +1794,44 @@ function rectOverlap(a, b) {
 
 // Main Level 3 goat logic
 function updateLevel3Goat() {
-    // Delay before goat starts moving
+    const cfg = SPRITES.goat;
+
+    // Activate goat after 2 seconds
     if (!goatActive && millis() - goatStartTime > 2000) {
         goatActive = true;
     }
 
-    if (goatActive) {
-        updateGoat();
-        drawGoat();
-        checkGoatCollision();
+    if (!goatActive) return;
+
+    // Movement speed (slow enough to see animation)
+    const speed = 1.2;
+
+    // Move goat
+    if (goatDirection === "right") {
+        goatX += speed;
+    } else {
+        goatX -= speed;
     }
+
+    // Flip direction at world edges
+    const minX = 50;
+    const maxX = WORLD_W_SCALED - 50;
+
+    if (goatX < minX) {
+        goatDirection = "right";
+    }
+    if (goatX > maxX) {
+        goatDirection = "left";
+    }
+
+    // ⭐ Goat animation (slow + correct for 5‑wide sheet)
+    if (frameCount % cfg.animSpeed === 0) {
+        goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
+    }
+
+    // Draw goat
+    drawGoat();
+
+    // Collision with penguin
+    checkGoatCollision();
 }
