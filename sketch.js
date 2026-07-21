@@ -210,37 +210,21 @@ const SPRITES = {
     cropTop:    [0,0,0,0,0,0],
     cropBottom: [0,0,0,0,0,0]
   },
- 
- goat_left: {
-    img: null,
-    frameWidth: 317,
-    frameHeight: 248,
-    numFrames: 4,
-    animSpeed: 6,
-    scale: 0.6,   // smaller goat
-    offsetX: 0,
-    offsetY: 0,
 
-    cropLeft:   Array(4).fill(0),
-    cropRight:  Array(4).fill(0),
-    cropTop:    Array(4).fill(0),
-    cropBottom: Array(4).fill(0)
-},
+const: GOAT = {
+  img: null,
 
-goat_right: {
-    img: null,
-    frameWidth: 317,
-    frameHeight: 248,
-    numFrames: 4,
-    animSpeed: 6,
-    scale: 0.6,   // smaller goat
-    offsetX: 0,
-    offsetY: 0,
+  frameWidth: 317,
+  frameHeight: 248,
 
-    cropLeft:   Array(4).fill(0),
-    cropRight:  Array(4).fill(0),
-    cropTop:    Array(4).fill(0),
-    cropBottom: Array(4).fill(0)
+  numFrames: 5,
+  animSpeed: 6,
+  scale: 0.6,
+
+  cropLeft:   [0, 0, 0, 0, 0],
+  cropRight:  [0, 0, 0, 0, 0],
+  cropTop:    [0, 0, 0, 0, 0],
+  cropBottom: [0, 0, 0, 0, 0]
 },
 
 };
@@ -1732,7 +1716,7 @@ function getGoatFrame(cfg, index, row) {
 
 // Goat movement + animation
 function updateGoat() {
-    // Use correct frame count (5 frames per row)
+    // Use correct frame count (4 frames per row)
     let cfg = (goatDirection === "left") ? SPRITES.goat_left : SPRITES.goat_right;
     goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
 
