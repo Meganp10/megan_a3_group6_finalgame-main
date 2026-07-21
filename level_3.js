@@ -1,4 +1,4 @@
-// level_3.js file
+
 
 /*for catherine: Holes for level 3:
   { x: 552, y: 1122},

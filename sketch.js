@@ -42,12 +42,13 @@ const walls = [];
 // ---------------- GOAT SYSTEM ----------------
 let goatSprite;
 let goatFrames = [];
-let goatX = 600;
-let goatY = 300;
+let goatX = WORLD_W_SCALED / 2 - 200;  // left of penguin
+let goatY = WORLD_H_SCALED / 2 + 200;  // slightly above penguin
 let goatFrameIndex = 0;
 let goatActive = false;
 let goatStartTime = 0;
 let goatInitialized = false;
+
 
 
 const SPRITES = {
@@ -242,6 +243,11 @@ function loadLevel(levelNum) {
   if (levelNum === 1) { img = level1Bg; topOffset = LEVEL1_TOP_OFFSET; }
   else if (levelNum === 2) { img = level2Bg; topOffset = LEVEL2_TOP_OFFSET; }
   else if (levelNum === 3) { img = level3Bg; topOffset = LEVEL3_TOP_OFFSET; }
+  if (levelNum === 3) {
+    goatX = WORLD_W_SCALED / 2 - 200;
+    goatY = WORLD_H_SCALED / 2 + 200;
+}
+
 
   bgImg = img;
   WORLD_W = img.width;
@@ -750,6 +756,12 @@ if (gameState === "transition") {
     gameState = "loss";
     return;
   }
+
+  if (!timerStarted) {
+    timerStarted = true;
+    startTime = millis();
+}
+
 
   handleInput();
   animateSprite();
