@@ -42,12 +42,14 @@ const walls = [];
 // ---------------- GOAT SYSTEM ----------------
 let goatSprite;
 let goatFrames = [];
-let goatX = WORLD_W_SCALED / 2 - 200;  // left of penguin
-let goatY = WORLD_H_SCALED / 2 + 200;  // slightly above penguin
+let goatX = 0;
+let goatY = 0;
 let goatFrameIndex = 0;
 let goatActive = false;
 let goatStartTime = 0;
 let goatInitialized = false;
+let goatDirection = "left";
+
 
 
 
@@ -208,6 +210,37 @@ const SPRITES = {
     cropTop:    [0,0,0,0,0,0],
     cropBottom: [0,0,0,0,0,0]
   },
+  goat_left: {
+    img: null,
+    frameWidth: 200,     // adjust to your sheet
+    frameHeight: 200,    // adjust to your sheet
+    numFrames: 8,        // first row
+    animSpeed: 6,
+    scale: 1.0,
+    offsetX: 0,
+    offsetY: 0,
+
+    cropLeft:   Array(8).fill(0),
+    cropRight:  Array(8).fill(0),
+    cropTop:    Array(8).fill(0),
+    cropBottom: Array(8).fill(0)
+},
+
+goat_right: {
+    img: null,
+    frameWidth: 200,
+    frameHeight: 200,
+    numFrames: 8,        // second row
+    animSpeed: 6,
+    scale: 1.0,
+    offsetX: 0,
+    offsetY: 0,
+
+    cropLeft:   Array(8).fill(0),
+    cropRight:  Array(8).fill(0),
+    cropTop:    Array(8).fill(0),
+    cropBottom: Array(8).fill(0)
+},
 };
 
 let player = {
@@ -447,7 +480,9 @@ function preload() {
   level2Bg = loadImage("assets/images/level2_background.png");
   level3Bg = loadImage("assets/images/level3_background.png");
 
-  goatSprite = loadImage("assets/images/goat_spritesheet.png");
+  SPRITES.goat_left.img = loadImage("assets/images/goat_spritesheet.png");
+  SPRITES.goat_right.img = SPRITES.goat_left.img; // same sheet
+
 
 }
 
@@ -773,8 +808,10 @@ if (gameState === "transition") {
 if (currentLevel === 3 && !goatInitialized) {
     goatInitialized = true;
     goatStartTime = millis();
-    setupGoatFrames();
+    goatDirection = random(["left", "right"]);
+  
 }
+
 
 
   // --- BLOCK TOP EXIT IF FISH NOT COLLECTED ---
@@ -1672,46 +1709,57 @@ if (levelPickerBtnPressed && lpHover) {
 // GOAT FUNCTIONS
 // ------------------------------------------------------------
 
-// Slice the goat sprite sheet into frames
-function setupGoatFrames() {
-    const frameW = goatSprite.width / 8;
-    const frameH = goatSprite.height / 4;
+// Get a goat frame from the correct row (0 = left, 1 = right)
+function getGoatFrame(cfg, index, row) {
+    const fw = cfg.frameWidth;
+    const fh = cfg.frameHeight;
 
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 8; c++) {
-            goatFrames.push(
-                goatSprite.get(c * frameW, r * frameH, frameW, frameH)
-            );
-        }
-    }
-}
+    const col = index % cfg.numFrames;
 
-// Main Level 3 goat logic
-function updateLevel3Goat() {
-
-    // Activate goat after 2 seconds
-    if (!goatActive && millis() - goatStartTime > 2000) {
-        goatActive = true;
-    }
-
-    if (goatActive) {
-        updateGoat();
-        drawGoat();
-        checkGoatCollision();
-    }
+    return cfg.img.get(
+        col * fw + cfg.cropLeft[index],
+        row * fh + cfg.cropTop[index],
+        fw - cfg.cropLeft[index] - cfg.cropRight[index],
+        fh - cfg.cropTop[index] - cfg.cropBottom[index]
+    );
 }
 
 // Goat movement + animation
 function updateGoat() {
-    goatX += 6;   // forward movement
-    goatY -= 2;   // jump arc
-    goatFrameIndex = (goatFrameIndex + 1) % goatFrames.length;
+    goatFrameIndex = (goatFrameIndex + 1) % 8;
+
+    if (goatDirection === "left") {
+        goatX -= 6;
+    } else {
+        goatX += 6;
+    }
 }
 
 // Draw goat in world space
 function drawGoat() {
-    const frame = goatFrames[goatFrameIndex];
-    image(frame, goatX - camX, goatY - camY);
+    let cfg;
+    let row;
+
+    if (goatDirection === "left") {
+        cfg = SPRITES.goat_left;
+        row = 0;
+    } else {
+        cfg = SPRITES.goat_right;
+        row = 1;
+    }
+
+    const frame = getGoatFrame(cfg, goatFrameIndex, row);
+
+    const screenX = (goatX - camX) * camZoom * bgScale + cfg.offsetX;
+    const screenY = (goatY - camY) * camZoom * bgScale + cfg.offsetY;
+
+    image(
+        frame,
+        screenX,
+        screenY,
+        frame.width * cfg.scale,
+        frame.height * cfg.scale
+    );
 }
 
 // Collision with penguin → loss screen
@@ -1743,4 +1791,17 @@ function rectOverlap(a, b) {
         a.y + a.h < b.y ||
         a.y > b.y + b.h
     );
+}
+
+// Main Level 3 goat logic
+function updateLevel3Goat() {
+    if (!goatActive && millis() - goatStartTime > 2000) {
+        goatActive = true;
+    }
+
+    if (goatActive) {
+        updateGoat();
+        drawGoat();
+        checkGoatCollision();
+    }
 }
