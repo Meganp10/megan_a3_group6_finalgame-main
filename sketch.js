@@ -215,32 +215,32 @@ const SPRITES = {
     img: null,
     frameWidth: 317,
     frameHeight: 248,
-    numFrames: 5,
+    numFrames: 4,
     animSpeed: 6,
     scale: 0.6,   // smaller goat
     offsetX: 0,
     offsetY: 0,
 
-    cropLeft:   Array(5).fill(0),
-    cropRight:  Array(5).fill(0),
-    cropTop:    Array(5).fill(0),
-    cropBottom: Array(5).fill(0)
+    cropLeft:   Array(4).fill(0),
+    cropRight:  Array(4).fill(0),
+    cropTop:    Array(4).fill(0),
+    cropBottom: Array(4).fill(0)
 },
 
 goat_right: {
     img: null,
     frameWidth: 317,
     frameHeight: 248,
-    numFrames: 5,
+    numFrames: 4,
     animSpeed: 6,
     scale: 0.6,   // smaller goat
     offsetX: 0,
     offsetY: 0,
 
-    cropLeft:   Array(5).fill(0),
-    cropRight:  Array(5).fill(0),
-    cropTop:    Array(5).fill(0),
-    cropBottom: Array(5).fill(0)
+    cropLeft:   Array(4).fill(0),
+    cropRight:  Array(4).fill(0),
+    cropTop:    Array(4).fill(0),
+    cropBottom: Array(4).fill(0)
 },
 
 };
@@ -1716,10 +1716,10 @@ if (levelPickerBtnPressed && lpHover) {
 
 // Get a goat frame from the correct row (0 = left, 1 = right)
 function getGoatFrame(cfg, index, row) {
-    const fw = cfg.frameWidth;   // 317
-    const fh = cfg.frameHeight;  // 248
+    const fw = cfg.frameWidth;
+    const fh = cfg.frameHeight;
 
-    const col = index % cfg.numFrames; // 0–4
+    const col = index % cfg.numFrames; // 0–3
 
     return cfg.img.get(
         col * fw + cfg.cropLeft[index],
@@ -1728,6 +1728,7 @@ function getGoatFrame(cfg, index, row) {
         fh - cfg.cropTop[index] - cfg.cropBottom[index]
     );
 }
+
 
 // Goat movement + animation
 function updateGoat() {
