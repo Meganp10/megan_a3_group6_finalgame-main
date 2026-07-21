@@ -49,6 +49,10 @@ let goatActive = false;
 let goatStartTime = 0;
 let goatInitialized = false;
 let goatDirection = "left";
+let goatHasKilledOnce = false;   // has the tutorial kill already happened?
+let goatTriggered = false;       // generic “run across screen” trigger
+let goatTriggerTime = 0;         // when we started the countdown
+let goatSpeed = 6;               // movement speed
 
 
 
@@ -1066,6 +1070,19 @@ function resetGame() {
 
   fish.collected = false;
   randomizeFishPosition();
+
+  // GOAT RESET LOGIC
+  goatActive = false;
+  goatInitialized = false;
+  goatTriggered = false;
+  goatTriggerTime = 0;
+
+  // If they’ve already been killed once by the goat,
+  // we arm the “later random border” behaviour for level 3.
+  if (currentLevel === 3 && goatHasKilledOnce) {
+    goatTriggered = true;
+    goatTriggerTime = millis();   // start delay for second run
+  }
 }
 
 function signedDistToWall(px, py, w) {
@@ -1196,6 +1213,12 @@ function handleInput() {
   const A = keyIsDown(65);
   const S = keyIsDown(83);
   const D = keyIsDown(68);
+
+    // --- FIRST GOAT TUTORIAL TRIGGER (LEVEL 3) ---
+  if (currentLevel === 3 && W && !goatHasKilledOnce && !goatTriggered) {
+    goatTriggered = true;
+    goatTriggerTime = millis();   // start 3s countdown
+  }
 
   // --- DIAGONALS FIRST ---
   if (W && D) {
@@ -1794,44 +1817,104 @@ function rectOverlap(a, b) {
 
 // Main Level 3 goat logic
 function updateLevel3Goat() {
-    const cfg = SPRITES.goat;
+  if (!WORLD_W_SCALED || !WORLD_H_SCALED) return;
 
-    // Activate goat after 2 seconds
-    if (!goatActive && millis() - goatStartTime > 2000) {
-        goatActive = true;
+  // -------------------------
+  // 1) HANDLE SPAWNING
+  // -------------------------
+
+  // FIRST RUN: 3s after W press, always from the right, moving left
+  if (!goatHasKilledOnce && goatTriggered && !goatActive) {
+    if (millis() - goatTriggerTime >= 3000) {
+      goatActive = true;
+      goatDirection = "left";              // move left across screen
+      goatX = WORLD_W_SCALED + 200;        // start off-screen on the right
+      goatY = player.y;                    // aim straight at current penguin row
     }
+  }
 
-    if (!goatActive) return;
+  // SECOND+ RUNS: after they’ve already been killed once
+  if (goatHasKilledOnce && goatTriggered && !goatActive) {
+    // goat shouldn't come immediately on retry
+    if (millis() - goatTriggerTime >= 8000) {   // 8s delay
+      goatActive = true;
 
-    // Movement speed (slow enough to see animation)
-    const speed = 1.2;
+      if (random() < 0.5) {
+        goatDirection = "right";   // spawn left → run right
+        goatX = -200;
+      } else {
+        goatDirection = "left";    // spawn right → run left
+        goatX = WORLD_W_SCALED + 200;
+      }
 
-    // Move goat
-    if (goatDirection === "right") {
-        goatX += speed;
-    } else {
-        goatX -= speed;
+      goatY = player.y;
     }
+  }
 
-    // Flip direction at world edges
-    const minX = 50;
-    const maxX = WORLD_W_SCALED - 50;
+  // -------------------------
+  // 2) MOVE GOAT
+  // -------------------------
+  if (!goatActive) return;
 
-    if (goatX < minX) {
-        goatDirection = "right";
-    }
-    if (goatX > maxX) {
-        goatDirection = "left";
-    }
+  if (goatDirection === "left") {
+    goatX -= goatSpeed;
+  } else {
+    goatX += goatSpeed;
+  }
 
-    // ⭐ Goat animation (slow + correct for 5‑wide sheet)
-    if (frameCount % cfg.animSpeed === 0) {
-        goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
-    }
+  // -------------------------
+  // 3) ANIMATE GOAT SPRITE
+  // -------------------------
+  goatFrameIndex = (goatFrameIndex + 1) % SPRITES.goat.numFrames;
 
-    // Draw goat
-    drawGoat();
+  // -------------------------
+  // 4) DRAW GOAT
+  // -------------------------
+  push();
+  scale(camZoom * bgScale);
+  translate(-camX, -camY);
 
-    // Collision with penguin
-    checkGoatCollision();
+  let cfg = SPRITES.goat;
+  let frameW = cfg.frameWidth;
+  let frameH = cfg.frameHeight;
+  let sx = goatFrameIndex * frameW;
+
+  // flip sprite if running right
+  if (goatDirection === "left") {
+    push();
+    translate(goatX + frameW * cfg.scale, goatY - frameH * cfg.scale);
+    scale(-1, 1);
+    image(cfg.img, 0, 0, frameW * cfg.scale, frameH * cfg.scale, sx, 0, frameW, frameH);
+    pop();
+  } else {
+    image(cfg.img, goatX, goatY - frameH * cfg.scale, frameW * cfg.scale, frameH * cfg.scale, sx, 0, frameW, frameH);
+  }
+
+  pop();
+
+  // -------------------------
+  // 5) COLLISION WITH PENGUIN
+  // -------------------------
+  let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
+  let penguinHitY = player.y + PENGUIN_HITBOX.offsetY;
+
+  if (
+    goatX < penguinHitX + PENGUIN_HITBOX.w &&
+    goatX + PENGUIN_HITBOX.w > penguinHitX &&
+    goatY < penguinHitY + PENGUIN_HITBOX.h &&
+    goatY + PENGUIN_HITBOX.h > penguinHitY
+  ) {
+    gameEnded = true;
+    gameState = "loss";
+
+    goatHasKilledOnce = true;
+    goatActive = false;
+    goatTriggered = false;
+  }
+
+  // -------------------------
+  // 6) DESPAWN WHEN OFF-SCREEN
+  // -------------------------
+  if (goatDirection === "left" && goatX < -400) goatActive = false;
+  if (goatDirection === "right" && goatX > WORLD_W_SCALED + 400) goatActive = false;
 }
