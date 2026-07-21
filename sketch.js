@@ -50,6 +50,14 @@ let goatStartTime = 0;
 let goatInitialized = false;
 let goatDirection = "left";
 
+// ---------------- GOAT SYSTEM STATE (scripted intro + random retries) ----------------
+let goatHasKilledOnce = false;  // once the scripted first kill happens, future level loads use random mode
+let goatScriptedMode = true;    // true = scripted intro charge, false = random edge spawns
+let goatWPressed = false;       // has W been pressed yet since this level (re)load
+let goatWPressTime = 0;
+let goatWaitingForW = false;
+let goatSpawnSide = "right";    // which edge the goat spawns from (random mode)
+
 
 
 
@@ -264,11 +272,6 @@ function loadLevel(levelNum) {
   if (levelNum === 1) { img = level1Bg; topOffset = LEVEL1_TOP_OFFSET; }
   else if (levelNum === 2) { img = level2Bg; topOffset = LEVEL2_TOP_OFFSET; }
   else if (levelNum === 3) { img = level3Bg; topOffset = LEVEL3_TOP_OFFSET; }
-  if (levelNum === 3) {
-    goatX = WORLD_W_SCALED / 2 - 200;
-    goatY = WORLD_H_SCALED / 2 + 200;
-}
-
 
   bgImg = img;
   WORLD_W = img.width;
@@ -280,6 +283,37 @@ function loadLevel(levelNum) {
   if (levelNum === 1) finishY = LEVEL1_FINISH_Y;
   else if (levelNum === 2) finishY = LEVEL2_FINISH_Y;
   else if (levelNum === 3) finishY = LEVEL3_FINISH_Y;
+
+  // ---------------- GOAT SETUP (Level 3 only) ----------------
+  // NOTE: this now runs AFTER WORLD_W_SCALED / WORLD_H_SCALED are computed
+  // above, so goat spawn positions are correct on the very first load.
+  if (levelNum === 3) {
+    goatInitialized = false;
+    goatActive = false;
+    goatWPressed = false;
+    goatWaitingForW = true;
+
+    if (!goatHasKilledOnce) {
+      // First attempt: scripted charge — spawns off-screen on the RIGHT,
+      // runs LEFT across the screen (toward/through the player).
+      goatScriptedMode = true;
+      goatX = WORLD_W_SCALED + 200; // starts off-screen to the right
+      goatY = playerSpawnY();       // roughly player's spawn height so it can hit them
+      goatDirection = "left";       // moving toward the left side of the screen
+    } else {
+      // Retry: random edge spawn, always running toward the opposite edge
+      goatScriptedMode = false;
+      goatSpawnSide = random(["left", "right"]);
+      if (goatSpawnSide === "left") {
+        goatX = -200;
+        goatDirection = "right";  // spawns left, runs right across screen
+      } else {
+        goatX = WORLD_W_SCALED + 200;
+        goatDirection = "left";   // spawns right, runs left across screen
+      }
+      goatY = WORLD_H_SCALED / 2 + 200;
+    }
+  }
 
   // Fish
   let fishStart;
@@ -791,12 +825,31 @@ if (gameState === "transition") {
   checkFishCollision(); 
 
   // ---------------- GOAT INIT (only for Level 3) ----------------
-if (currentLevel === 3 && !goatInitialized) {
-    goatInitialized = true;
-    goatStartTime = millis();
-    goatDirection = random(["left", "right"]);
-  
-}
+  if (currentLevel === 3 && !goatInitialized) {
+    // Detect the first W press to start the countdown (scripted mode only)
+    if (goatWaitingForW && !goatWPressed && keyIsDown(87)) {
+      goatWPressed = true;
+      goatWPressTime = millis();
+    }
+
+    if (goatScriptedMode) {
+      // Wait for W to be pressed, then 3 seconds, before the goat activates
+      if (goatWPressed && millis() - goatWPressTime > 3000) {
+        goatInitialized = true;
+        goatActive = true;
+      }
+    } else {
+      // Retry mode: no need to wait on the W-press gimmick — activate
+      // shortly after the level starts so the goat can appear at any time.
+      if (goatStartTime === 0 || goatStartTime === undefined) {
+        goatStartTime = millis();
+      }
+      if (millis() - goatStartTime > 500) {
+        goatInitialized = true;
+        goatActive = true;
+      }
+    }
+  }
 
 
 
@@ -1066,6 +1119,34 @@ function resetGame() {
 
   fish.collected = false;
   randomizeFishPosition();
+
+  // Re-run the Level 3 goat setup so a retry gets the correct
+  // scripted-vs-random spawn based on goatHasKilledOnce.
+  if (currentLevel === 3) {
+    goatInitialized = false;
+    goatActive = false;
+    goatWPressed = false;
+    goatWaitingForW = true;
+    goatStartTime = 0;
+
+    if (!goatHasKilledOnce) {
+      goatScriptedMode = true;
+      goatX = WORLD_W_SCALED + 200;
+      goatY = playerSpawnY();
+      goatDirection = "left";
+    } else {
+      goatScriptedMode = false;
+      goatSpawnSide = random(["left", "right"]);
+      if (goatSpawnSide === "left") {
+        goatX = -200;
+        goatDirection = "right";
+      } else {
+        goatX = WORLD_W_SCALED + 200;
+        goatDirection = "left";
+      }
+      goatY = WORLD_H_SCALED / 2 + 200;
+    }
+  }
 }
 
 function signedDistToWall(px, py, w) {
@@ -1698,14 +1779,14 @@ if (levelPickerBtnPressed && lpHover) {
 // GOAT SYSTEM — CLEAN FINAL VERSION
 // ------------------------------------------------------------
 
-// Get a goat frame from the correct row (0 = left, 1 = right)
+// Get a goat frame from the correct row (0 = right-facing, 1 = left-facing)
 function getGoatFrame(index, row) {
     const cfg = SPRITES.goat;
 
     const fw = cfg.frameWidth;
     const fh = cfg.frameHeight;
 
-    // ⭐ Correct column for 5-wide sheet
+    // Correct column for 5-wide sheet
     const col = index % cfg.numFrames;   // numFrames = 5
 
     return cfg.img.get(
@@ -1716,30 +1797,11 @@ function getGoatFrame(index, row) {
     );
 }
 
-// Goat movement + animation
-function updateGoat() {
-    // Use correct frame count (4 frames per row)
-    let cfg = (goatDirection === "left") ? SPRITES.goat_left : SPRITES.goat_right;
-    if (frameCount % SPRITES.goat.animSpeed === 0) {
-    goatFrameIndex = (goatFrameIndex + 1) % SPRITES.goat.numFrames;
-}
-
-    // Move goat
-  const goatSpeed = 0.8;   // slow enough to see each frame clearly
-
-if (goatDirection === "right") {
-    goatX += goatSpeed;
-} else {
-    goatX -= goatSpeed;
-}
-
-}
-
 // Draw goat inside world transform (fixes jitter)
 function drawGoat() {
     const cfg = SPRITES.goat;
 
-    // Row 0 = RIGHT, Row 1 = LEFT
+    // Row 0 = RIGHT-facing sprite, Row 1 = LEFT-facing sprite
     let row = (goatDirection === "right") ? 0 : 1;
 
     const frame = getGoatFrame(goatFrameIndex, row);
@@ -1759,8 +1821,6 @@ function drawGoat() {
     pop();
 }
 
-
-
 // Collision with penguin → loss screen
 function checkGoatCollision() {
     const penguinHitbox = {
@@ -1778,6 +1838,12 @@ function checkGoatCollision() {
     };
 
     if (rectOverlap(penguinHitbox, goatHitbox)) {
+        if (goatScriptedMode) {
+            // The scripted first kill has now happened — future level
+            // (re)loads will use random edge-spawn behavior instead.
+            goatHasKilledOnce = true;
+        }
+        goatActive = false;
         gameState = "loss";
     }
 }
@@ -1792,39 +1858,24 @@ function rectOverlap(a, b) {
     );
 }
 
-// Main Level 3 goat logic
+// Main Level 3 goat logic — moves the goat straight across the screen
+// in whatever direction it was set to spawn/travel in, animates it,
+// draws it, and checks for collision with the penguin.
 function updateLevel3Goat() {
     const cfg = SPRITES.goat;
 
-    // Activate goat after 2 seconds
-    if (!goatActive && millis() - goatStartTime > 2000) {
-        goatActive = true;
-    }
-
     if (!goatActive) return;
 
-    // Movement speed (slow enough to see animation)
-    const speed = 1.2;
+    // Scripted intro charge moves a bit faster/dramatic than random retries
+    const speed = goatScriptedMode ? 3 : 2.2;
 
-    // Move goat
     if (goatDirection === "right") {
         goatX += speed;
     } else {
         goatX -= speed;
     }
 
-    // Flip direction at world edges
-    const minX = 50;
-    const maxX = WORLD_W_SCALED - 50;
-
-    if (goatX < minX) {
-        goatDirection = "right";
-    }
-    if (goatX > maxX) {
-        goatDirection = "left";
-    }
-
-    // ⭐ Goat animation (slow + correct for 5‑wide sheet)
+    // Animation
     if (frameCount % cfg.animSpeed === 0) {
         goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
     }
@@ -1834,4 +1885,13 @@ function updateLevel3Goat() {
 
     // Collision with penguin
     checkGoatCollision();
+
+    // If the goat runs fully off the far edge without hitting the
+    // player, deactivate it so it doesn't loop forever.
+    if (goatDirection === "right" && goatX > WORLD_W_SCALED + 300) {
+        goatActive = false;
+    }
+    if (goatDirection === "left" && goatX < -300) {
+        goatActive = false;
+    }
 }
