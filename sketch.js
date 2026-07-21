@@ -39,6 +39,17 @@ let camZoom = 2; //change back to 2
 const WALL_MARGIN = 10;
 const walls = [];
 
+// ---------------- GOAT SYSTEM ----------------
+let goatSprite;
+let goatFrames = [];
+let goatX = 600;
+let goatY = 300;
+let goatFrameIndex = 0;
+let goatActive = false;
+let goatStartTime = 0;
+let goatInitialized = false;
+
+
 const SPRITES = {
   up: {
     img: null,
@@ -429,6 +440,9 @@ function preload() {
   level1Bg = loadImage("assets/images/tutorial_background.png");
   level2Bg = loadImage("assets/images/level2_background.png");
   level3Bg = loadImage("assets/images/level3_background.png");
+
+  goatSprite = loadImage("assets/images/goat_spritesheet.png");
+
 }
 
 function setup() {
@@ -743,6 +757,14 @@ if (gameState === "transition") {
   updateStompAnimation();
   checkFishCollision(); 
 
+  // ---------------- GOAT INIT (only for Level 3) ----------------
+if (currentLevel === 3 && !goatInitialized) {
+    goatInitialized = true;
+    goatStartTime = millis();
+    setupGoatFrames();
+}
+
+
   // --- BLOCK TOP EXIT IF FISH NOT COLLECTED ---
   if (!fish.collected) {
     if (player.y < WORLD_TOP_LIMIT + 40) {
@@ -815,6 +837,12 @@ if (player.y < finishY && fish.collected) {
   drawSpikeHitboxes();
   drawWalls();
   pop();
+
+  // ---------------- GOAT UPDATE ----------------
+if (currentLevel === 3) {
+    updateLevel3Goat();
+}
+
 
   // DRAW CHARACTER
   drawCharacterOnScreen();
@@ -1626,4 +1654,81 @@ if (levelPickerBtnPressed && lpHover) {
     winBtnPressed = false;
     return;
   }
+}
+
+// ------------------------------------------------------------
+// GOAT FUNCTIONS
+// ------------------------------------------------------------
+
+// Slice the goat sprite sheet into frames
+function setupGoatFrames() {
+    const frameW = goatSprite.width / 8;
+    const frameH = goatSprite.height / 4;
+
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 8; c++) {
+            goatFrames.push(
+                goatSprite.get(c * frameW, r * frameH, frameW, frameH)
+            );
+        }
+    }
+}
+
+// Main Level 3 goat logic
+function updateLevel3Goat() {
+
+    // Activate goat after 2 seconds
+    if (!goatActive && millis() - goatStartTime > 2000) {
+        goatActive = true;
+    }
+
+    if (goatActive) {
+        updateGoat();
+        drawGoat();
+        checkGoatCollision();
+    }
+}
+
+// Goat movement + animation
+function updateGoat() {
+    goatX += 6;   // forward movement
+    goatY -= 2;   // jump arc
+    goatFrameIndex = (goatFrameIndex + 1) % goatFrames.length;
+}
+
+// Draw goat in world space
+function drawGoat() {
+    const frame = goatFrames[goatFrameIndex];
+    image(frame, goatX - camX, goatY - camY);
+}
+
+// Collision with penguin → loss screen
+function checkGoatCollision() {
+    const penguinHitbox = {
+        x: player.x + PENGUIN_HITBOX.offsetX,
+        y: player.y + PENGUIN_HITBOX.offsetY,
+        w: PENGUIN_HITBOX.w,
+        h: PENGUIN_HITBOX.h
+    };
+
+    const goatHitbox = {
+        x: goatX,
+        y: goatY,
+        w: 120,
+        h: 120
+    };
+
+    if (rectOverlap(penguinHitbox, goatHitbox)) {
+        gameState = "loss";
+    }
+}
+
+// Rectangle overlap helper
+function rectOverlap(a, b) {
+    return !(
+        a.x + a.w < b.x ||
+        a.x > b.x + b.w ||
+        a.y + a.h < b.y ||
+        a.y > b.y + b.h
+    );
 }
