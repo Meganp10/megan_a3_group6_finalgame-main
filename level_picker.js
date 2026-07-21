@@ -1,3 +1,5 @@
+//level_picker.js file
+
 let infoOpen = false;
 const INFO_CLOSED_X = -1100;  // off screen left
 const INFO_OPEN_X = 100;      // where box stops
@@ -260,67 +262,27 @@ if (mouseX > infoBtnX && mouseX < infoBtnX + infoBtnSize &&
 }
 
 function startLevel(i) {
-    if (i === 0) {
-        startLevel1();   // Level 1 uses tutorial
-        return;
-    }
+  if (i === 0) {
+    startLevel1();   // Level 1 uses tutorial
+    return;
+  }
 
-    resetGame();
-    currentLevel = i + 1;
-    gameState = "level" + (i + 1);
+  currentLevel = i + 1;      // 2 for Level 2, 3 for Level 3
+  loadLevel(currentLevel);   // build that level's background/walls/spikes/fish
+  resetGame();
+  gameState = "playing";
+  cursor(ARROW);
 }
 
 function startLevel1() {
-    resetGame();          // resets timer, penguin, stomp, etc.
-    gameState = "tutorial";
-    tutorialActive = true;
-    tutorialAlpha = 0;
-    tutorialIndex = 0;
-    tutorialDelay = tutorialSteps[0].delay;
+loadLevel(1);
+resetGame();          // resets timer, penguin, stomp, etc.
+gameState = "tutorial";
+tutorialActive = true;
+tutorialAlpha = 0;
+tutorialIndex = 0;
+tutorialDelay = tutorialSteps[0].delay;
 }
-
-function startLevel2() {
-    resetGame();
-    currentLevel = 2;
-    gameState = "level2";
-}
-
-function startLevel3() {
-    resetGame();
-    currentLevel = 3;
-    gameState = "level3";
-
-    bgImg = loadImage("assets/images/level3_background.png", () => {
-        WORLD_W = bgImg.width;
-        WORLD_H = bgImg.height;
-        bgScale = Math.max(VIEW_W / WORLD_W, VIEW_H / WORLD_H);
-        WORLD_W_SCALED = WORLD_W * bgScale;
-        WORLD_H_SCALED = WORLD_H * bgScale;
-        WORLD_TOP_LIMIT = WORLD_H_SCALED / 2 - 550;
-
-        const fishStart = getLevel3FishStart(WORLD_W_SCALED, WORLD_H_SCALED);
-        fish.x = fishStart.x;
-        fish.y = fishStart.y;
-
-        fishSpawns = LEVEL3_FISH_SPAWNS;
-
-        walls.length = 0;
-        walls.push(...buildLevel3Walls(WORLD_W_SCALED, WORLD_H_SCALED));
-
-        spikes = LEVEL3_SPIKES.map(s => ({ ...s }));
-
-        player.x = WORLD_W_SCALED / 2;
-        player.y = playerSpawnY();
-
-        for (let w of walls) {
-            w.side = Math.sign(
-                pointSide(player.x, player.y, w.x1, w.y1, w.x2, w.y2)
-            );
-        }
-    });
-}
-
-
 
 
 // For fastest times
