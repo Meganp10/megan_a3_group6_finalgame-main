@@ -210,38 +210,38 @@ const SPRITES = {
     cropTop:    [0,0,0,0,0,0],
     cropBottom: [0,0,0,0,0,0]
   },
+ 
   goat_left: {
     img: null,
-    frameWidth: 256,
-    frameHeight: 256,
-    numFrames: 8,
+    frameWidth: 317,
+    frameHeight: 248,
+    numFrames: 5,        // first row has 5 frames
     animSpeed: 6,
     scale: 1.0,
     offsetX: 0,
     offsetY: 0,
 
-    cropLeft:   Array(8).fill(0),
-    cropRight:  Array(8).fill(0),
-    cropTop:    Array(8).fill(0),
-    cropBottom: Array(8).fill(0)
+    cropLeft:   Array(5).fill(0),
+    cropRight:  Array(5).fill(0),
+    cropTop:    Array(5).fill(0),
+    cropBottom: Array(5).fill(0)
 },
 
 goat_right: {
     img: null,
-    frameWidth: 256,
-    frameHeight: 256,
-    numFrames: 8,
+    frameWidth: 317,
+    frameHeight: 248,
+    numFrames: 5,        // second row has 5 frames
     animSpeed: 6,
     scale: 1.0,
     offsetX: 0,
     offsetY: 0,
 
-    cropLeft:   Array(8).fill(0),
-    cropRight:  Array(8).fill(0),
-    cropTop:    Array(8).fill(0),
-    cropBottom: Array(8).fill(0)
+    cropLeft:   Array(5).fill(0),
+    cropRight:  Array(5).fill(0),
+    cropTop:    Array(5).fill(0),
+    cropBottom: Array(5).fill(0)
 },
-
 };
 
 let player = {
@@ -1709,13 +1709,16 @@ if (levelPickerBtnPressed && lpHover) {
 // ------------------------------------------------------------
 // GOAT FUNCTIONS
 // ------------------------------------------------------------
+// ------------------------------------------------------------
+// GOAT SYSTEM — CLEAN FINAL VERSION
+// ------------------------------------------------------------
 
 // Get a goat frame from the correct row (0 = left, 1 = right)
 function getGoatFrame(cfg, index, row) {
-    const fw = cfg.frameWidth;
-    const fh = cfg.frameHeight;
+    const fw = cfg.frameWidth;   // 317
+    const fh = cfg.frameHeight;  // 248
 
-    const col = index % cfg.numFrames;
+    const col = index % cfg.numFrames; // 0–4
 
     return cfg.img.get(
         col * fw + cfg.cropLeft[index],
@@ -1727,8 +1730,11 @@ function getGoatFrame(cfg, index, row) {
 
 // Goat movement + animation
 function updateGoat() {
-    goatFrameIndex = (goatFrameIndex + 1) % 8;
+    // Use correct frame count (5 frames per row)
+    let cfg = (goatDirection === "left") ? SPRITES.goat_left : SPRITES.goat_right;
+    goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
 
+    // Move goat
     if (goatDirection === "left") {
         goatX -= 6;
     } else {
@@ -1736,31 +1742,26 @@ function updateGoat() {
     }
 }
 
-// Draw goat in world space
+// Draw goat inside world transform (fixes jitter)
 function drawGoat() {
-    let cfg;
-    let row;
-
-    if (goatDirection === "left") {
-        cfg = SPRITES.goat_left;
-        row = 0;
-    } else {
-        cfg = SPRITES.goat_right;
-        row = 1;
-    }
+    let cfg = (goatDirection === "left") ? SPRITES.goat_left : SPRITES.goat_right;
+    let row = (goatDirection === "left") ? 0 : 1;
 
     const frame = getGoatFrame(cfg, goatFrameIndex, row);
 
-    const screenX = (goatX - camX) * camZoom * bgScale + cfg.offsetX;
-    const screenY = (goatY - camY) * camZoom * bgScale + cfg.offsetY;
+    push();
+    scale(camZoom * bgScale);
+    translate(-camX, -camY);
 
     image(
         frame,
-        screenX,
-        screenY,
+        goatX,
+        goatY,
         frame.width * cfg.scale,
         frame.height * cfg.scale
     );
+
+    pop();
 }
 
 // Collision with penguin → loss screen
@@ -1775,7 +1776,7 @@ function checkGoatCollision() {
     const goatHitbox = {
         x: goatX,
         y: goatY,
-        w: 120,
+        w: 120,   // adjust if needed
         h: 120
     };
 
@@ -1796,6 +1797,7 @@ function rectOverlap(a, b) {
 
 // Main Level 3 goat logic
 function updateLevel3Goat() {
+    // Delay before goat starts moving
     if (!goatActive && millis() - goatStartTime > 2000) {
         goatActive = true;
     }
