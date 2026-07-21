@@ -1897,7 +1897,7 @@ function updateLevel3Goat() {
   let frameH = cfg.frameHeight;
   let sx = goatFrameIndex * frameW;
 
-  if (goatDirection === "right") {
+  if (goatDirection === "left") {
     push();
     translate(goatX + frameW * cfg.scale, goatY - frameH * cfg.scale);
     scale(-1, 1);
