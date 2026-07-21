@@ -53,6 +53,8 @@ let goatHasKilledOnce = false;   // has the tutorial kill already happened?
 let goatTriggered = false;       // generic “run across screen” trigger
 let goatTriggerTime = 0;         // when we started the countdown
 let goatSpeed = 6;               // movement speed
+let goatNextSpawnDelay = 3000;  // first retry goat comes after 3s
+
 
 
 
@@ -1083,6 +1085,12 @@ function resetGame() {
     goatTriggered = true;
     goatTriggerTime = millis();   // start delay for second run
   }
+  if (currentLevel === 3 && goatHasKilledOnce) {
+  goatTriggered = true;
+  goatTriggerTime = millis();
+  goatNextSpawnDelay = 3000; // first goat after retry
+}
+
 }
 
 function signedDistToWall(px, py, w) {
@@ -1823,30 +1831,41 @@ function updateLevel3Goat() {
   // 1) SPAWN LOGIC
   // -------------------------
 
-  // FIRST RUN: 3s after W press, always from right → left
+  // FIRST RUN: 1s after W press, always from right → left
   if (!goatHasKilledOnce && goatTriggered && !goatActive) {
-    if (millis() - goatTriggerTime >= 3000) {
+    if (millis() - goatTriggerTime >= 1000) {
       goatActive = true;
       goatDirection = "left";
-      goatX = WORLD_W_SCALED + 200;   // off-screen right
-      goatY = player.y;               // aim at penguin row
+      goatX = WORLD_W_SCALED + 200;
+      goatY = player.y;
+
+      // prevent repeat
+      goatTriggered = false;
     }
   }
 
-  // RETRY RUNS: delayed random border
-  if (goatHasKilledOnce && goatTriggered && !goatActive) {
-    if (millis() - goatTriggerTime >= 8000) {
+  // RETRY RUNS: goats spawn repeatedly every few seconds
+  if (goatHasKilledOnce) {
+    // If no goat active, spawn a new one after a random delay
+    if (!goatActive && millis() - goatTriggerTime >= goatNextSpawnDelay) {
+
       goatActive = true;
 
+      // Random side
       if (random() < 0.5) {
-        goatDirection = "right";
-        goatX = -200;                 // off-screen left
+        goatDirection = "right";      // run right
+        goatX = -200;                 // left side
       } else {
-        goatDirection = "left";
-        goatX = WORLD_W_SCALED + 200; // off-screen right
+        goatDirection = "left";       // run left
+        goatX = WORLD_W_SCALED + 200; // right side
       }
 
-      goatY = player.y;
+      // Random Y anywhere on mountain
+      goatY = random(200, WORLD_H_SCALED - 200);
+
+      // Set next spawn delay (2–5 seconds)
+      goatNextSpawnDelay = random(2000, 5000);
+      goatTriggerTime = millis();
     }
   }
 
@@ -1878,14 +1897,16 @@ function updateLevel3Goat() {
   let frameH = cfg.frameHeight;
   let sx = goatFrameIndex * frameW;
 
-  if (goatDirection === "left") {
+  if (goatDirection === "right") {
     push();
     translate(goatX + frameW * cfg.scale, goatY - frameH * cfg.scale);
     scale(-1, 1);
     image(cfg.img, 0, 0, frameW * cfg.scale, frameH * cfg.scale, sx, 0, frameW, frameH);
     pop();
   } else {
-    image(cfg.img, goatX, goatY - frameH * cfg.scale, frameW * cfg.scale, frameH * cfg.scale, sx, 0, frameW, frameH);
+    image(cfg.img, goatX, goatY - frameH * cfg.scale,
+          frameW * cfg.scale, frameH * cfg.scale,
+          sx, 0, frameW, frameH);
   }
 
   pop();
@@ -1893,33 +1914,27 @@ function updateLevel3Goat() {
   // -------------------------
   // 5) COLLISION WITH PENGUIN
   // -------------------------
-
-  // Goat hitbox aligned with sprite
   let goatHitX = goatX;
   let goatHitY = goatY - (frameH * cfg.scale);
   let goatHitW = frameW * cfg.scale;
   let goatHitH = frameH * cfg.scale;
 
-  // Penguin hitbox
   let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
   let penguinHitY = player.y + PENGUIN_HITBOX.offsetY;
   let penguinHitW = PENGUIN_HITBOX.w;
   let penguinHitH = PENGUIN_HITBOX.h;
 
-  // AABB overlap
   if (
     goatHitX < penguinHitX + penguinHitW &&
     goatHitX + goatHitW > penguinHitX &&
     goatHitY < penguinHitY + penguinHitH &&
     goatHitY + goatHitH > penguinHitY
   ) {
-    // ⭐ THIS IS WHERE THE LOSS SCREEN TRIGGERS ⭐
     gameEnded = true;
     gameState = "loss";
 
     goatHasKilledOnce = true;
     goatActive = false;
-    goatTriggered = false;
   }
 
   // -------------------------
