@@ -1088,7 +1088,7 @@ function resetGame() {
   if (currentLevel === 3 && goatHasKilledOnce) {
   goatTriggered = true;
   goatTriggerTime = millis();
-  goatNextSpawnDelay = 3000; // first goat after retry
+  goatNextSpawnDelay = 1000; // first goat after retry
 }
 
 }
@@ -1528,7 +1528,7 @@ function drawBlizzardOverlay() {
 
   // Full white blizzard layer
   stormLayer.noStroke();
-  stormLayer.fill(255, 255, 255, 100); // change opacity back to 253 after debugging
+  stormLayer.fill(255, 255, 255, 200); // change opacity back to 253 after debugging
   stormLayer.rect(0, 0, width, height);
 
   // Convert penguin world → screen
@@ -1833,7 +1833,7 @@ function updateLevel3Goat() {
 
   // FIRST RUN: 1s after W press, always from right → left
   if (!goatHasKilledOnce && goatTriggered && !goatActive) {
-    if (millis() - goatTriggerTime >= 1000) {
+    if (millis() - goatTriggerTime >= 500) {
       goatActive = true;
       goatDirection = "left";
       goatX = WORLD_W_SCALED + 200;
@@ -1864,7 +1864,7 @@ function updateLevel3Goat() {
       goatY = random(200, WORLD_H_SCALED - 200);
 
       // Set next spawn delay (2–5 seconds)
-      goatNextSpawnDelay = random(2000, 5000);
+      goatNextSpawnDelay = random(800, 1800);
       goatTriggerTime = millis();
     }
   }
