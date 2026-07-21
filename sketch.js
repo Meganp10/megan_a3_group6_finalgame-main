@@ -216,8 +216,8 @@ const SPRITES = {
   frameWidth: 317,
   frameHeight: 248,
   numFrames: 5,
-  animSpeed: 6,
-  scale: 0.6,
+  animSpeed: 20,
+  scale: 0.3,
   cropLeft:   [0,0,0,0,0],
   cropRight:  [0,0,0,0,0],
   cropTop:    [0,0,0,0,0],
@@ -1719,16 +1719,22 @@ function getGoatFrame(index, row) {
 function updateGoat() {
     // Use correct frame count (4 frames per row)
     let cfg = (goatDirection === "left") ? SPRITES.goat_left : SPRITES.goat_right;
+    if (frameCount % SPRITES.goat.animSpeed === 0) {
     goatFrameIndex = (goatFrameIndex + 1) % SPRITES.goat.numFrames;
+}
+
 
 
 
     // Move goat
-    if (goatDirection === "left") {
-        goatX -= 3;
-    } else {
-        goatX += 3;
-    }
+  const goatSpeed = 0.8;   // slow enough to see each frame clearly
+
+if (goatDirection === "right") {
+    goatX += goatSpeed;
+} else {
+    goatX -= goatSpeed;
+}
+
 }
 
 // Draw goat inside world transform (fixes jitter)
