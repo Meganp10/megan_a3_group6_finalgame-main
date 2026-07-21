@@ -211,13 +211,13 @@ const SPRITES = {
     cropBottom: [0,0,0,0,0,0]
   },
  
-  goat_left: {
+ goat_left: {
     img: null,
     frameWidth: 317,
     frameHeight: 248,
-    numFrames: 5,        // first row has 5 frames
+    numFrames: 5,
     animSpeed: 6,
-    scale: 1.0,
+    scale: 0.6,   // smaller goat
     offsetX: 0,
     offsetY: 0,
 
@@ -231,9 +231,9 @@ goat_right: {
     img: null,
     frameWidth: 317,
     frameHeight: 248,
-    numFrames: 5,        // second row has 5 frames
+    numFrames: 5,
     animSpeed: 6,
-    scale: 1.0,
+    scale: 0.6,   // smaller goat
     offsetX: 0,
     offsetY: 0,
 
@@ -242,6 +242,7 @@ goat_right: {
     cropTop:    Array(5).fill(0),
     cropBottom: Array(5).fill(0)
 },
+
 };
 
 let player = {
@@ -1736,9 +1737,9 @@ function updateGoat() {
 
     // Move goat
     if (goatDirection === "left") {
-        goatX -= 6;
+        goatX -= 3;
     } else {
-        goatX += 6;
+        goatX += 3;
     }
 }
 
