@@ -166,7 +166,7 @@ function drawInfoPanel(index) {
   let panel = levelPanels[index];
   let x = panel.x;
   let y = 175;
-  const PANEL_W = 500;
+ const PANEL_W = 500;
   const PANEL_H = 500;
 
   image(info_box, x, y, PANEL_W, PANEL_H);
@@ -216,20 +216,27 @@ function drawInfoPanel(index) {
   textSize(68);
   text(panel.recordTime, centerX, y + 320);
 
-  let btnX = x + PANEL_W / 2;
-  let btnY = y + PANEL_H - 100;
+ let btnX = x + PANEL_W / 2;
+let btnY = y + PANEL_H - 100;
 
-  // get hover from PLAY button
-  let hovered = drawButton("PLAY", btnX, btnY, 220, 60, playBtnPressed[index]);
+// Determine if the player has played this level before
+let levelKey = "level" + (index + 1);
+let hasPlayed = fastestTimes[levelKey] !== null || bestStars[levelKey] > 0;
 
-  // store hover if you need it later
-  levelPanels[index].playHover = hovered;
+// Change button label based on play history
+let btnLabel = hasPlayed ? "PLAY AGAIN" : "PLAY";
 
-  // 🔹 make cursor a pointer when ENTER is hovered
-  if (hovered) {
-    cursor(HAND);
-  }
+// get hover from PLAY button
+let hovered = drawButton(btnLabel, btnX, btnY, 220, 60, playBtnPressed[index]);
+
+// store hover if you need it later
+levelPanels[index].playHover = hovered;
+
+// make cursor a pointer when ENTER is hovered
+if (hovered) {
+  cursor(HAND);
 }
+
 
 function handleLevelPickerClick() {
   let infoBtnX = 25;
