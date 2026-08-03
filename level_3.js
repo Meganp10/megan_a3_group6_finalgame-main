@@ -613,23 +613,5 @@ if (
   if (goatDirection === "left" && goatX < -400) goatActive = false;
   if (goatDirection === "right" && goatX > WORLD_W_SCALED + 400)
     goatActive = false;
-  if (DEBUG_GOAT_HITBOX) drawGoatHitbox();
-}
-
-
-function drawGoatHitbox() {
-  let cfg = SPRITES.goat;
-  let frameW = cfg.frameWidth * cfg.scale;
-  let frameH = cfg.frameHeight * cfg.scale;
-
-  let x = (goatX - camX) * camZoom * bgScale;
-  let y = (goatY - frameH - camY) * camZoom * bgScale;
-
-  push();
-  noFill();
-  stroke(255, 0, 0);
-  strokeWeight(3);
-  rect(x, y, frameW * camZoom * bgScale, frameH * camZoom * bgScale);
-  pop();
 }
 
