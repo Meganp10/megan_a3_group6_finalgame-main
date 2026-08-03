@@ -43,7 +43,7 @@ function activateGoatRun() {
   if (goatSound && goatSound.isLoaded()) goatSound.play();
 
   if (goatHasKilledOnce) {
-    goatNextSpawnDelay = random(800, 1800);
+   goatNextSpawnDelay = random(300, 900);  // more goats, faster
     goatTriggerTime = millis();
   }
 }
@@ -363,7 +363,7 @@ let goatHasKilledOnce = false; // has the tutorial kill already happened?
 let goatTriggered = false; // generic “run across screen” trigger
 let goatTriggerTime = 0; // when we started the countdown
 let goatSpeed = 4; // movement speed
-let goatNextSpawnDelay = 3000; // first retry goat comes after 3s
+let goatNextSpawnDelay = 150; // first retry goat
 let goatFrameTimer = 0;
 
 // Holds the spawn details decided when the warning starts, applied
@@ -473,7 +473,7 @@ function updateLevel3Goat() {
 
   // FIRST RUN: 1s after W press, randomized left/right
   if (!goatHasKilledOnce && goatTriggered && !goatActive) {
-    if (millis() - goatTriggerTime >= 500) {
+    if (millis() - goatTriggerTime >= 150) { // earlier goat
       if (random() < 0.5) {
         pendingGoatDirection = "right";      // run right
         pendingGoatX = -200;                 // spawn on the left side
@@ -577,22 +577,31 @@ function updateLevel3Goat() {
   // -------------------------
   // 5) COLLISION WITH PENGUIN
   // -------------------------
-  let goatHitX = goatX;
-  let goatHitY = goatY - frameH * cfg.scale;
-  let goatHitW = frameW * cfg.scale;
-  let goatHitH = frameH * cfg.scale;
+  let cfg = SPRITES.goat;
+let frameW = cfg.frameWidth * cfg.scale;
+let frameH = cfg.frameHeight * cfg.scale;
 
-  let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
-  let penguinHitY = player.y + PENGUIN_HITBOX.offsetY;
-  let penguinHitW = PENGUIN_HITBOX.w;
-  let penguinHitH = PENGUIN_HITBOX.h;
+// Goat draw position (matches drawGoat)
+let goatHitX = goatX;
+let goatHitY = goatY - frameH;
 
-  if (
-    goatHitX < penguinHitX + penguinHitW &&
-    goatHitX + goatHitW > penguinHitX &&
-    goatHitY < penguinHitY + penguinHitH &&
-    goatHitY + goatHitH > penguinHitY
-  ) {
+// Hitbox size
+let goatHitW = frameW;
+let goatHitH = frameH;
+
+// Penguin hitbox
+let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
+let penguinHitY = player.y + PENGUIN_HITBOX.offsetY;
+let penguinHitW = PENGUIN_HITBOX.w;
+let penguinHitH = PENGUIN_HITBOX.h;
+
+// Overlap check
+if (
+  goatHitX < penguinHitX + penguinHitW &&
+  goatHitX + goatHitW > penguinHitX &&
+  goatHitY < penguinHitY + penguinHitH &&
+  goatHitY + goatHitH > penguinHitY
+) {
     if (goatSound && goatSound.isLoaded()) goatSound.play();
 
     gameEnded = true;
@@ -601,7 +610,8 @@ function updateLevel3Goat() {
 
     goatHasKilledOnce = true;
     goatActive = false;
-  }
+}
+
 
   // -------------------------
   // 6) DESPAWN WHEN OFF-SCREEN
