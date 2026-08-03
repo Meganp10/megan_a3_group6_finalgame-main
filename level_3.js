@@ -1,77 +1,209 @@
-
-
-/*for catherine: Holes for level 3:
-  { x: 552, y: 1122},
-  { x: 966, y: 1157},
-  { x: 889, y: 702},
-  { x: 632, y: 869},
-  { x: 282, y: 947},
-  { x: 329, y: 569},
-  { x: 633, y: 459}, */
-
 const LEVEL3_FISH_SPAWNS = [
-  { x: 85, y: 1502},
-  { x: 1124, y: 1517},
-  { x: 735, y: 1032},
+  { x: 85, y: 1502 },
+  { x: 1124, y: 1517 },
+  { x: 735, y: 1032 },
 ];
+
+const LEVEL3_HOLES = [
+  { x: 585, y: 1122 },
+  { x: 966, y: 1157 },
+  { x: 889, y: 702 },
+  { x: 645, y: 869 },
+  { x: 282, y: 947 },
+  { x: 329, y: 569 },
+  { x: 633, y: 459 },
+];
+
+let avalancheCard3;
+let goatCard;
+let level3CardActive = false;
+let level3CardStep = 0;
+
+let stopSignTimer = 0;
+const STOPSIGN_RISE_FRAMES = 20;  // rises up + fades in
+const STOPSIGN_HOLD_FRAMES = 90;  // stays fully visible (~1.5s)
+const STOPSIGN_FADE_FRAMES = 30;  // fades out
+const STOPSIGN_TOTAL_FRAMES =
+  STOPSIGN_RISE_FRAMES + STOPSIGN_HOLD_FRAMES + STOPSIGN_FADE_FRAMES;
+
+function preloadLevel3Assets() {
+  avalancheCard3 = loadImage("assets/images/avalanche_card3.png");
+  goatCard = loadImage("assets/images/goat_card.png");
+  stopSignCard = loadImage("assets/images/stopsign_card.png");
+}
+
+// Actually starts the goat run, using whatever direction/position
+// was decided when the warning began.
+function activateGoatRun() {
+  goatActive = true;
+  goatDirection = pendingGoatDirection;
+  goatX = pendingGoatX;
+  goatY = pendingGoatY;
+
+  if (goatSound && goatSound.isLoaded()) goatSound.play();
+
+  if (goatHasKilledOnce) {
+    goatNextSpawnDelay = random(800, 1800);
+    goatTriggerTime = millis();
+  }
+}
+
+function startLevel3Intro() {
+  level3CardActive = true;
+  level3CardStep = 0;
+  stopSignTimer = 0;
+  gameState = "level3_card";
+}
+
+// ENTER dismisses the card and hands control back to normal gameplay.
+function handleLevel3CardKeyPressed() {
+  if (gameState !== "level3_card" || keyCode !== ENTER) return false;
+
+  // Once the stop sign card starts, it dismisses itself — ignore input.
+  if (level3CardStep >= 2) return true;
+
+  level3CardStep++;
+
+  if (level3CardStep === 2) {
+    stopSignTimer = 0; // start the auto-dismiss animation
+  }
+
+  playCardSwitchSound();
+
+  return true;
+}
+
+function handleLevel3CardMousePressed() {
+  if (gameState !== "level3_card") return false;
+
+  // Once the stop sign card starts, it dismisses itself — ignore input.
+  if (level3CardStep >= 2) return true;
+
+  level3CardStep++;
+
+  if (level3CardStep === 2) {
+    stopSignTimer = 0; // start the auto-dismiss animation
+  }
+
+  playCardSwitchSound();
+
+  return true;
+}
+
+// Draws the card — reuses drawDialogueCard() already defined in tutorial_cards.js
+// Draws the card — reuses drawDialogueCard() already defined in tutorial_cards.js
+function drawLevel3CardOverlay() {
+  if (level3CardStep === 0) {
+    drawDialogueCard(avalancheCard3);
+  } else if (level3CardStep === 1) {
+    drawDialogueCard(goatCard);
+  } else if (level3CardStep === 2) {
+    drawStopSignCard();
+  }
+}
+
+// Auto-plays: rises up + fades in, holds, then fades out on its own —
+// no ENTER/click needed. Ends the level3 intro sequence when finished.
+function drawStopSignCard() {
+  stopSignTimer++;
+
+  let alpha = 255;
+  let riseOffset = 0;
+
+  if (stopSignTimer < STOPSIGN_RISE_FRAMES) {
+    // Rising in: fades from 0→255, moves up from +40px to 0
+    let t = stopSignTimer / STOPSIGN_RISE_FRAMES;
+    alpha = map(t, 0, 1, 0, 255);
+    riseOffset = map(t, 0, 1, 40, 0);
+  } else if (stopSignTimer < STOPSIGN_RISE_FRAMES + STOPSIGN_HOLD_FRAMES) {
+    // Fully visible hold
+    alpha = 255;
+    riseOffset = 0;
+  } else if (stopSignTimer < STOPSIGN_TOTAL_FRAMES) {
+    // Fading out
+    let fadeElapsed =
+      stopSignTimer - (STOPSIGN_RISE_FRAMES + STOPSIGN_HOLD_FRAMES);
+    let t = fadeElapsed / STOPSIGN_FADE_FRAMES;
+    alpha = map(t, 0, 1, 255, 0);
+    alpha = constrain(alpha, 0, 255);
+  } else {
+    // Animation finished — end the level3 intro sequence
+    level3CardActive = false;
+    gameState = "playing";
+    cursor(ARROW);
+    return;
+  }
+
+  push();
+  imageMode(CENTER);
+
+  const cardH = min(500, height - 200);
+  const cardW = cardH * (stopSignCard.width / stopSignCard.height);
+
+  tint(255, alpha);
+  image(stopSignCard, width / 2, height / 2 + riseOffset, cardW, cardH);
+  noTint();
+
+  pop();
+}
 
 function getLevel3FishStart(WORLD_W_SCALED, WORLD_H_SCALED) {
   return {
     x: WORLD_W_SCALED / 2,
-    y: WORLD_H_SCALED / 2 + 700
+    y: WORLD_H_SCALED / 2 + 700,
   };
 }
 
 function buildLevel3Walls(WORLD_W_SCALED, WORLD_H_SCALED) {
-  return [ 
+  return [
     {
       x1: 74,
       y1: 1497,
       x2: 242,
-      y2: 772
+      y2: 772,
     },
     {
       x1: 242,
       y1: 772,
       x2: 356,
-      y2: 522
+      y2: 522,
     },
     {
       x1: 356,
       y1: 522,
       x2: 468,
-      y2: 379
+      y2: 379,
     },
     {
       //across line
       x1: 510,
       y1: 300,
       x2: 700,
-      y2: 300
+      y2: 300,
     },
     {
       x1: 750,
       y1: 358,
       x2: 851,
-      y2: 476
+      y2: 476,
     },
     {
       x1: 927,
       y1: 603,
       x2: 1079,
-      y2: 1047
-     },
+      y2: 1047,
+    },
     {
-     x1: 1079,
-     y1: 1047,
-     x2: 1125,
-     y2: 1212
-    }
+      x1: 1079,
+      y1: 1047,
+      x2: 1125,
+      y2: 1212,
+    },
   ];
 }
 
 const LEVEL3_SPIKES = [
-   { x: 469, y: 362, variant: 0 },
+  { x: 469, y: 362, variant: 0 },
   { x: 495, y: 366, variant: 0 },
   { x: 517, y: 366, variant: 0 },
   { x: 544, y: 366, variant: 0 },
@@ -200,3 +332,281 @@ const LEVEL3_TOP_OFFSET = 550;
 
 // World Y coordinate of the finish line for Level 3.
 const LEVEL3_FINISH_Y = 391; // <- replace once you have Level 3's background
+
+// ------------------------------------------------------------
+// GOAT SYSTEM
+// ------------------------------------------------------------
+// Moved here from sketch.js since the goat only ever appears in Level 3.
+// These are plain globals (like everything else in this project), so
+// sketch.js can still read/write goatX, goatInitialized, etc. from
+// loadLevel(), draw(), handleInput() and resetGame() as before — only
+// the declarations and the goat-specific logic itself live here now.
+//
+// NOTE: getGoatFrame(), updateGoat(), drawGoat(), checkGoatCollision(),
+// and rectOverlap() below are NOT called anywhere — the actual goat
+// spawn/move/animate/collide logic lives entirely inside
+// updateLevel3Goat(), which IS called every frame from draw() in
+// sketch.js. Left them in (moved, not deleted) since removing working
+// code you didn't ask me to remove felt like the wrong call — but if you
+// don't have another use planned for them, they're safe to delete.
+
+let goatSprite;
+let goatFrames = [];
+let goatX = 0;
+let goatY = 0;
+let goatFrameIndex = 0;
+let goatActive = false;
+let goatStartTime = 0;
+let goatInitialized = false;
+let goatDirection = "left";
+let goatHasKilledOnce = false; // has the tutorial kill already happened?
+let goatTriggered = false; // generic “run across screen” trigger
+let goatTriggerTime = 0; // when we started the countdown
+let goatSpeed = 4; // movement speed
+let goatNextSpawnDelay = 3000; // first retry goat comes after 3s
+let goatFrameTimer = 0;
+
+// Holds the spawn details decided when the warning starts, applied
+// once the warning finishes and the goat actually begins running.
+let pendingGoatDirection = "left";
+let pendingGoatX = 0;
+let pendingGoatY = 0;
+
+// Get a goat frame from the correct row (0 = left, 1 = right)
+function getGoatFrame(index, row) {
+  const cfg = SPRITES.goat;
+
+  const fw = cfg.frameWidth;
+  const fh = cfg.frameHeight;
+
+  // ⭐ Correct column for 5-wide sheet
+  const col = index % cfg.numFrames; // numFrames = 5
+
+  return cfg.img.get(
+    col * fw + cfg.cropLeft[index],
+    row * fh + cfg.cropTop[index],
+    fw - cfg.cropLeft[index] - cfg.cropRight[index],
+    fh - cfg.cropTop[index] - cfg.cropBottom[index],
+  );
+}
+
+// Goat movement + animation
+function updateGoat() {
+  if (!window.goatDebug) {
+    window.goatDebug = { lastFrame: frameCount, calls: 0 };
+  }
+
+  if (frameCount !== window.goatDebug.lastFrame) {
+    console.log("Goat updated", window.goatDebug.calls, "times last frame");
+    window.goatDebug.calls = 0;
+    window.goatDebug.lastFrame = frameCount;
+  }
+
+  window.goatDebug.calls++;
+
+  const cfg = SPRITES.goat;
+  const frameDelay = 120; // ms per frame (slow)
+  if (millis() - goatStartTime > frameDelay) {
+    goatStartTime = millis();
+    goatFrameIndex = (goatFrameIndex + 1) % cfg.numFrames;
+  }
+
+  // movement
+  const goatSpeed = 0.4;
+  goatX += goatDirection === "right" ? goatSpeed : -goatSpeed;
+}
+
+// Draw goat inside world transform (fixes jitter)
+function drawGoat() {
+  const cfg = SPRITES.goat;
+
+  // Row 0 = RIGHT, Row 1 = LEFT
+  let row = goatDirection === "right" ? 0 : 1;
+
+  const frame = getGoatFrame(goatFrameIndex, row);
+
+  push();
+  scale(camZoom * bgScale);
+  translate(-camX, -camY);
+
+  image(frame, goatX, goatY, frame.width * cfg.scale, frame.height * cfg.scale);
+  pop();
+}
+
+// Collision with penguin → loss screen
+function checkGoatCollision() {
+  const penguinHitbox = {
+    x: player.x + PENGUIN_HITBOX.offsetX,
+    y: player.y + PENGUIN_HITBOX.offsetY,
+    w: PENGUIN_HITBOX.w,
+    h: PENGUIN_HITBOX.h,
+  };
+
+  const goatHitbox = {
+    x: goatX,
+    y: goatY,
+    w: 120, // adjust if needed
+    h: 120,
+  };
+
+  if (rectOverlap(penguinHitbox, goatHitbox)) {
+    gameState = "loss";
+  }
+}
+
+// Rectangle overlap helper
+function rectOverlap(a, b) {
+  return !(
+    a.x + a.w < b.x ||
+    a.x > b.x + b.w ||
+    a.y + a.h < b.y ||
+    a.y > b.y + b.h
+  );
+}
+
+function updateLevel3Goat() {
+  if (!WORLD_W_SCALED || !WORLD_H_SCALED) return;
+
+  // -------------------------
+  // 1) SPAWN LOGIC
+  // -------------------------
+
+  // FIRST RUN: 1s after W press, randomized left/right
+  if (!goatHasKilledOnce && goatTriggered && !goatActive) {
+    if (millis() - goatTriggerTime >= 500) {
+      if (random() < 0.5) {
+        pendingGoatDirection = "right";      // run right
+        pendingGoatX = -200;                 // spawn on the left side
+      } else {
+        pendingGoatDirection = "left";       // run left
+        pendingGoatX = WORLD_W_SCALED + 200; // spawn on the right side
+      }
+      pendingGoatY = player.y;
+
+      activateGoatRun(); // spawn the goat right now
+
+      // prevent repeat
+      goatTriggered = false;
+    }
+  }
+
+  // RETRY RUNS: goats spawn repeatedly every few seconds
+  if (goatHasKilledOnce) {
+    if (!goatActive && millis() - goatTriggerTime >= goatNextSpawnDelay) {
+
+      // Random side
+      if (random() < 0.5) {
+        pendingGoatDirection = "right";      // run right
+        pendingGoatX = -200;                 // left side
+      } else {
+        pendingGoatDirection = "left";       // run left
+        pendingGoatX = WORLD_W_SCALED + 200; // right side
+      }
+
+      // Random Y anywhere on mountain
+      pendingGoatY = random(200, WORLD_H_SCALED - 200);
+
+      activateGoatRun(); // spawn the goat right now
+    }
+  }
+
+  if (!goatActive) return;
+
+  // -------------------------
+  // 2) MOVE GOAT
+  // -------------------------
+  if (goatDirection === "left") {
+    goatX -= goatSpeed;
+  } else {
+    goatX += goatSpeed;
+  }
+
+  // -------------------------
+  // 3) ANIMATE GOAT
+  // -------------------------
+  goatFrameTimer++;
+  if (goatFrameTimer >= SPRITES.goat.animSpeed) {
+    goatFrameTimer = 0;
+    goatFrameIndex = (goatFrameIndex + 1) % SPRITES.goat.numFrames;
+  }
+
+  // -------------------------
+  // 4) DRAW GOAT (with flip)
+  // -------------------------
+  push();
+  scale(camZoom * bgScale);
+  translate(-camX, -camY);
+
+  let cfg = SPRITES.goat;
+  let frameW = cfg.frameWidth;
+  let frameH = cfg.frameHeight;
+  let sx = goatFrameIndex * frameW;
+
+  if (goatDirection === "left") {
+    push();
+    translate(goatX + frameW * cfg.scale, goatY - frameH * cfg.scale);
+    scale(-1, 1);
+    image(
+      cfg.img,
+      0,
+      0,
+      frameW * cfg.scale,
+      frameH * cfg.scale,
+      sx,
+      0,
+      frameW,
+      frameH,
+    );
+    pop();
+  } else {
+    image(
+      cfg.img,
+      goatX,
+      goatY - frameH * cfg.scale,
+      frameW * cfg.scale,
+      frameH * cfg.scale,
+      sx,
+      0,
+      frameW,
+      frameH,
+    );
+  }
+
+  pop();
+
+  // -------------------------
+  // 5) COLLISION WITH PENGUIN
+  // -------------------------
+  let goatHitX = goatX;
+  let goatHitY = goatY - frameH * cfg.scale;
+  let goatHitW = frameW * cfg.scale;
+  let goatHitH = frameH * cfg.scale;
+
+  let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
+  let penguinHitY = player.y + PENGUIN_HITBOX.offsetY;
+  let penguinHitW = PENGUIN_HITBOX.w;
+  let penguinHitH = PENGUIN_HITBOX.h;
+
+  if (
+    goatHitX < penguinHitX + penguinHitW &&
+    goatHitX + goatHitW > penguinHitX &&
+    goatHitY < penguinHitY + penguinHitH &&
+    goatHitY + goatHitH > penguinHitY
+  ) {
+    if (goatSound && goatSound.isLoaded()) goatSound.play();
+
+    gameEnded = true;
+    gameState = "loss";
+    if (walkSound && walkSound.isPlaying()) walkSound.stop();
+
+    goatHasKilledOnce = true;
+    goatActive = false;
+  }
+
+  // -------------------------
+  // 6) DESPAWN WHEN OFF-SCREEN
+  // -------------------------
+  if (goatDirection === "left" && goatX < -400) goatActive = false;
+  if (goatDirection === "right" && goatX > WORLD_W_SCALED + 400)
+    goatActive = false;
+}
