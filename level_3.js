@@ -577,17 +577,12 @@ function updateLevel3Goat() {
   // -------------------------
   // 5) COLLISION WITH PENGUIN
   // -------------------------
-  let cfg = SPRITES.goat;
-let frameW = cfg.frameWidth * cfg.scale;
-let frameH = cfg.frameHeight * cfg.scale;
-
-// Goat draw position (matches drawGoat)
+// Use the same cfg, frameW, frameH already defined above
 let goatHitX = goatX;
-let goatHitY = goatY - frameH;
+let goatHitY = goatY - frameH * cfg.scale;
+let goatHitW = frameW * cfg.scale;
+let goatHitH = frameH * cfg.scale;
 
-// Hitbox size
-let goatHitW = frameW;
-let goatHitH = frameH;
 
 // Penguin hitbox
 let penguinHitX = player.x + PENGUIN_HITBOX.offsetX;
@@ -612,11 +607,29 @@ if (
     goatActive = false;
 }
 
-
   // -------------------------
   // 6) DESPAWN WHEN OFF-SCREEN
   // -------------------------
   if (goatDirection === "left" && goatX < -400) goatActive = false;
   if (goatDirection === "right" && goatX > WORLD_W_SCALED + 400)
     goatActive = false;
+  if (DEBUG_GOAT_HITBOX) drawGoatHitbox();
 }
+
+
+function drawGoatHitbox() {
+  let cfg = SPRITES.goat;
+  let frameW = cfg.frameWidth * cfg.scale;
+  let frameH = cfg.frameHeight * cfg.scale;
+
+  let x = (goatX - camX) * camZoom * bgScale;
+  let y = (goatY - frameH - camY) * camZoom * bgScale;
+
+  push();
+  noFill();
+  stroke(255, 0, 0);
+  strokeWeight(3);
+  rect(x, y, frameW * camZoom * bgScale, frameH * camZoom * bgScale);
+  pop();
+}
+
