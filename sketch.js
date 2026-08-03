@@ -223,7 +223,7 @@ const SPRITES = {
   frameHeight: 248,  // 247–248 is correct
   numFrames: 5,      // 5 columns
   animSpeed: 20,
-  scale: 0.3,
+  scale: 0.5,
 
   cropLeft:   [10, 15, 20, 15, 10],
   cropRight:  [10, 15, 20, 15, 10],
